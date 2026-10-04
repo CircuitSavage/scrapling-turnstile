@@ -61,6 +61,7 @@ def request_token(
             "X-API-Key": key,
             "Content-Type": "application/json",
             "Accept": "application/json",
+            "User-Agent": "scrapling-turnstile/0.1.1 (+https://github.com/CircuitSavage/scrapling-turnstile)",
         },
     )
     try:
