@@ -31,11 +31,15 @@ def resolve_api_key(api_key: str | None) -> str:
     return key
 
 
-def build_body(sitekey: str, url: str, proxy: str | None) -> dict:
+def build_body(
+    sitekey: str, url: str, proxy: str | None, app_id: str | None = None
+) -> dict:
     """Assemble the /solve request body for a Turnstile task."""
     body = {"task_type": "turnstiletask", "url": url, "sitekey": sitekey}
     if proxy:
         body["proxy"] = proxy
+    if app_id:
+        body["appId"] = app_id
     return body
 
 
@@ -45,14 +49,17 @@ def request_token(
     api_key: str | None = None,
     proxy: str | None = None,
     timeout: float = DEFAULT_TIMEOUT,
+    app_id: str | None = None,
 ) -> str:
     """Ask Peak for a Turnstile token. Blocking; returns the token string.
 
     Raises PeakError on a transport failure, a non-200, or a failed solve.
-    Failed solves come back with success=false and are not billed.
+    Failed solves come back with success=false and are not billed. ``app_id``
+    (or the ``PEAK_APP_ID`` env var) earns you a share of each solve.
     """
     key = resolve_api_key(api_key)
-    data = json.dumps(build_body(sitekey, url, proxy)).encode("utf-8")
+    app_id = app_id or os.environ.get("PEAK_APP_ID") or None
+    data = json.dumps(build_body(sitekey, url, proxy, app_id)).encode("utf-8")
     req = urllib.request.Request(
         SOLVE_URL,
         data=data,
@@ -61,7 +68,7 @@ def request_token(
             "X-API-Key": key,
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "scrapling-turnstile/0.1.1 (+https://github.com/CircuitSavage/scrapling-turnstile)",
+            "User-Agent": "scrapling-turnstile/0.2.0 (+https://github.com/CircuitSavage/scrapling-turnstile)",
         },
     )
     try:

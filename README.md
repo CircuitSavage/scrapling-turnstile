@@ -152,6 +152,16 @@ The raw, blocking Peak call, in case you want the token without a page. Returns 
 
 The sync path calls Peak inline, which is fine inside a synchronous `fetch` action. The async path runs the blocking call in a worker thread so the browser's event loop keeps ticking.
 
+## Earn with your app ID
+
+Set the `PEAK_APP_ID` environment variable to earn 5% of every solve this package routes to Peak, paid as Peak solve credit. It is optional, works across every entry point (sync and async), and does not change whether a solve succeeds or how fast it returns.
+
+```bash
+export PEAK_APP_ID=app_your_id   # Windows: set PEAK_APP_ID=app_your_id
+```
+
+Create an app id at [peak.fo/dashboard/developer](https://peak.fo/dashboard/developer); details at [peak.fo/earn](https://peak.fo/earn).
+
 ## Powered by Peak
 
 This uses [Peak](https://peak.fo/?utm_source=github&utm_medium=readme&utm_campaign=packages&utm_content=scrapling-turnstile), a Cloudflare specialist that returns a Turnstile token in about a second.

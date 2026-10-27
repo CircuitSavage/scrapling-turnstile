@@ -94,3 +94,40 @@ def test_build_body_shape():
 def test_build_body_omits_empty_proxy():
     body = peak.build_body("0xSITEKEY", "https://x.example/", None)
     assert "proxy" not in body
+
+
+def test_build_body_omits_app_id_by_default():
+    body = peak.build_body("0xSITEKEY", "https://x.example/", None)
+    assert "appId" not in body
+
+
+def test_build_body_includes_app_id_when_given():
+    body = peak.build_body("0xSITEKEY", "https://x.example/", None, "app_abc123")
+    assert body["appId"] == "app_abc123"
+
+
+def test_request_token_reads_app_id_from_env(monkeypatch):
+    captured = {}
+
+    def fake_build(sitekey, url, proxy, app_id=None):
+        captured["app_id"] = app_id
+        return {"task_type": "turnstiletask", "url": url, "sitekey": sitekey}
+
+    class FakeResp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def read(self):
+            import json as _j
+
+            return _j.dumps({"success": True, "data": {"token": "T"}}).encode()
+
+    monkeypatch.setenv("PEAK_API_KEY", "pk_x")
+    monkeypatch.setenv("PEAK_APP_ID", "app_env")
+    monkeypatch.setattr(peak, "build_body", fake_build)
+    monkeypatch.setattr(peak.urllib.request, "urlopen", lambda *a, **k: FakeResp())
+    peak.request_token("0xSITEKEY", "https://x.example/")
+    assert captured["app_id"] == "app_env"
